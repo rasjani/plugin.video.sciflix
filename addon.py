@@ -4,20 +4,22 @@ from urlparse import urlparse
 from os.path import basename
 from resources.lib import feedparser
 
-FEED_URL="http://sciflix.blogspot.fi/atom.xml"
+FEED_URL="http://feeds.feedburner.com/Sciflix"
 
 plugin = Plugin()
 feedparser._FeedParserMixin.can_contain_dangerous_markup.remove('content')
 
 
 def _htmlify(url):
-  # feedparser._FeedParserMixin.can_contain_dangerous_markup.remove('content')
-  # feedparser._FeedParserMixin.can_contain_dangerous_markup = [] ## 
   return  feedparser.parse(url)
 
 
 def videourl(pid):
   return "plugin://plugin.video.youtube/?action=play_video&videoid=%s" % pid
+
+def thumbnailurl(pid):
+  return "http://img.youtube.com/vi/%s/0.jpg" % pid
+
 
 @plugin.route('/')
 def index():
@@ -56,6 +58,7 @@ def category(name):
           {
             'label': label_name,
             'path': videourl(playid),
+            'thumbnail': thumbnailurl(playid),
             'is_playable' : True
           }
         )
