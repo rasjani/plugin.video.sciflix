@@ -5,6 +5,9 @@ from os.path import basename
 from resources.lib import feedparser
 
 FEED_URL="http://feeds.feedburner.com/Sciflix"
+JSON_DATA_URL="http://gdata.youtube.com/feeds/api/videos/%s?v=2&alt=json"
+THUMBNAIL_URL="http://img.youtube.com/vi/%s/hqdefault.jpg"
+YOUTUBE_PLUGIN_URL="plugin://plugin.video.youtube/?action=play_video&videoid=%s"
 
 plugin = Plugin()
 feedparser._FeedParserMixin.can_contain_dangerous_markup.remove('content')
@@ -15,10 +18,11 @@ def _htmlify(url):
 
 
 def videourl(pid):
-  return "plugin://plugin.video.youtube/?action=play_video&videoid=%s" % pid
+  return YOUTUBE_PLUGIN_URL  % pid
+
 
 def thumbnailurl(pid):
-  return "http://img.youtube.com/vi/%s/0.jpg" % pid
+  return THUMBNAIL_URL % pid
 
 
 @plugin.route('/')
@@ -38,10 +42,6 @@ def index():
 
   return items
 
-
-@plugin.route('/play/<pid>/')
-def play(pid):
-  pass
    
 @plugin.route('/category/<name>/')
 def category(name):
