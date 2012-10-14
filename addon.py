@@ -1,11 +1,8 @@
 from xbmcswift2 import Plugin
-from xbmcswift2 import download_page
 from BeautifulSoup import BeautifulSoup as BS
 from urlparse import urlparse
-from urlparse import parse_qs
-import feedparser
 from os.path import basename
-from lxml import etree
+from resources.lib import feedparser
 
 FEED_URL="http://sciflix.blogspot.fi/atom.xml"
 
@@ -58,7 +55,8 @@ def category(name):
         items.append ( 
           {
             'label': label_name,
-            'path': videourl(playid)
+            'path': videourl(playid),
+            'is_playable' : True
           }
         )
 
