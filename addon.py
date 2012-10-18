@@ -1,65 +1,118 @@
 from xbmcswift2 import Plugin
+from xbmcswift2 import download_page as DP
 from BeautifulSoup import BeautifulSoup as BS
 from urlparse import urlparse
 from os.path import basename
-from resources.lib import feedparser
+import json
 
-FEED_URL="http://feeds.feedburner.com/Sciflix"
-JSON_DATA_URL="http://gdata.youtube.com/feeds/api/videos/%s?v=2&alt=json"
+YOUTUBE_JSON_DATA_URL="http://gdata.youtube.com/feeds/api/videos/%s?v=2&alt=json"
+BLOGGER_POSTS_JSON_DATA_URL="https://www.googleapis.com/blogger/v3/blogs/8574416417432246234/posts?key=AIzaSyBIUneOnieL9jxdA1MiKuvaMrcibJc8Og0%s"
 THUMBNAIL_URL="http://img.youtube.com/vi/%s/hqdefault.jpg"
 YOUTUBE_PLUGIN_URL="plugin://plugin.video.youtube/?action=play_video&videoid=%s"
 
 plugin = Plugin()
-feedparser._FeedParserMixin.can_contain_dangerous_markup.remove('content')
 
 
-def _htmlify(url):
-  return  feedparser.parse(url)
+def _convert_duration(val):
 
+  m, s = divmod(int(val), 60)
+  h, m = divmod(m, 60)
+  ret = "%d:%02d:%02d" % (h, m, s)
+  print ret
+  return ret
+
+
+def _jsonfy(url):
+  return json.loads(DP(url))
 
 def videourl(pid):
   return YOUTUBE_PLUGIN_URL  % pid
 
-
 def thumbnailurl(pid):
   return THUMBNAIL_URL % pid
 
-
 @plugin.route('/')
 def index():
-  content = _htmlify(FEED_URL)
   items = []
-  for cat in content.feed.categories:
-    category_name = cat[1]
-    if category_name not in ['sheepintheisland','fallout','half-life','series']:
-      items.append( 
-        {
-          'label': category_name.title(),
-          'path': plugin.url_for('category', name = category_name),
-          'is_playable': False,
-        }
-      )
+  items.append( 
+    {
+      'label': "All Videos",
+      'path': plugin.url_for('category', name = "all"),
+      'is_playable': False,
+    }
+  )
+  done = False
+  jsondata = None
+  token = "&maxResults=20&fetchBodies=false"
+  categories = []
+  while not done:
+    if jsondata != None:
+      if 'nextPageToken' in jsondata:
+        token = "&maxResults=20&fetchBodies=false&pageToken=%s" % jsondata['nextPageToken']
+      else:
+        done = True
+        token = ""
 
+    if not done:
+      url = BLOGGER_POSTS_JSON_DATA_URL % token
+      jsondata = _jsonfy(url)
+      for item in jsondata['items']:
+        for label in item['labels']:
+          if label not in categories:
+            categories.append(label)
+            if label not in ['sheepintheisland','fallout','half-life','series']:
+              items.append(
+                  {
+                    'label': label.title(),
+                    'path': plugin.url_for('category', name = label),
+                    'is_playable': False,
+                  }
+              )
   return items
 
    
 @plugin.route('/category/<name>/')
 def category(name):
-  content = _htmlify(FEED_URL)
   items = []
-  for entry in content.entries:
-    for cat in entry.categories:
-      if cat[1] == name:
-        label_name = entry.title
-        foo = BS(entry.content[0].value)
-        playid = basename(urlparse(foo.find('param')['value']).path)
+  done = False
+  jsondata = None
+  category = ''
+ 
+  if name != 'all':
+    category = '&labels=%s' % name
 
+  token = "&maxResults=20&fetchBodies=true%s" % category
+
+  while not done:
+    if jsondata != None:
+      if 'nextPageToken' in jsondata:
+        token = "&maxResults=20&fetchBodies=true&pageToken=%s%s" % ( jsondata['nextPageToken'], category )
+      else:
+        done = True
+        token = ""
+
+    if not done:
+      url = BLOGGER_POSTS_JSON_DATA_URL % token
+      jsondata = _jsonfy(url)
+      for item in jsondata['items']:
+        foo = BS(item['content'])
+        playid = basename(urlparse(foo.find('param')['value']).path)
+        youtube_url = YOUTUBE_JSON_DATA_URL % playid
+        videojsondata = _jsonfy( youtube_url )
         items.append ( 
           {
-            'label': label_name,
+            'label': item['title'],
+            'label2': videojsondata['entry']['title']['$t'],
             'path': videourl(playid),
             'thumbnail': thumbnailurl(playid),
-            'is_playable' : True
+            'is_playable' : True,
+            'info': {
+                'plot': videojsondata['entry']['media$group']['media$description']['$t'],
+                'plotoutline': videojsondata['entry']['title']['$t'],
+                'duration': _convert_duration(videojsondata['entry']['media$group']['yt$duration']['seconds']),
+                'rating': videojsondata['entry']['gd$rating']['average']
+                # 'aired': item['date'].split()[0],
+            },
           }
         )
 
