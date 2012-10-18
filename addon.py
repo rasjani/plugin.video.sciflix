@@ -31,7 +31,7 @@ def videourl(pid):
 def thumbnailurl(pid):
   return THUMBNAIL_URL % pid
 
-@plugin.route('/')
+@plugin.cached_route('/')
 def index():
   items = []
   items.append( 
@@ -71,7 +71,7 @@ def index():
   return items
 
    
-@plugin.route('/category/<name>/')
+@plugin.cached_route('/category/<name>/')
 def category(name):
   items = []
   done = False
