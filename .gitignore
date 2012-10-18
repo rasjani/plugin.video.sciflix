@@ -1,3 +1,4 @@
 *.pyc
 .gitignore
 *.xml
+releases/tmp
