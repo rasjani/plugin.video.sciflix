@@ -1,6 +1,6 @@
 #!/bin/sh
 # TODO: Add version from latest git tag
-VERSION=0.1
+VERSION=0.2
 PLUGINNAME="plugin.video.sciflix"
 
 rm -rf ./releases/tmp/
