@@ -1,6 +1,8 @@
 from xbmcswift2 import Plugin
 from xbmcswift2 import download_page as DP
 from BeautifulSoup import BeautifulSoup as BS
+from urllib2 import HTTPError
+from time import sleep
 from urlparse import urlparse
 from os.path import basename
 import json
@@ -98,23 +100,27 @@ def category(name):
         foo = BS(item['content'])
         playid = basename(urlparse(foo.find('param')['value']).path)
         youtube_url = YOUTUBE_JSON_DATA_URL % playid
-        videojsondata = _jsonfy( youtube_url )
-        items.append ( 
-          {
-            'label': item['title'],
-            'label2': videojsondata['entry']['title']['$t'],
-            'path': videourl(playid),
-            'thumbnail': thumbnailurl(playid),
-            'is_playable' : True,
-            'info': {
-                'plot': videojsondata['entry']['media$group']['media$description']['$t'],
-                'plotoutline': videojsondata['entry']['title']['$t'],
-                'duration': _convert_duration(videojsondata['entry']['media$group']['yt$duration']['seconds']),
-                'rating': videojsondata['entry']['gd$rating']['average']
-                # 'aired': item['date'].split()[0],
-            },
-          }
-        )
+        try:
+          videojsondata = _jsonfy( youtube_url )
+        except HTTPError:
+          pass
+        else:
+          items.append (
+            {
+              'label': item['title'],
+              'label2': videojsondata['entry']['title']['$t'],
+              'path': videourl(playid),
+              'thumbnail': thumbnailurl(playid),
+              'is_playable' : True,
+              'info': {
+                  'plot': videojsondata['entry']['media$group']['media$description']['$t'],
+                  'plotoutline': videojsondata['entry']['title']['$t'],
+                  'duration': _convert_duration(videojsondata['entry']['media$group']['yt$duration']['seconds']),
+                  'rating': videojsondata['entry']['gd$rating']['average']
+                  # 'aired': item['date'].split()[0],
+              },
+            }
+          )
 
   return items
 
