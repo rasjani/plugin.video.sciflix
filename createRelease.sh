@@ -1,6 +1,6 @@
 #!/bin/sh
 # TODO: Add version from latest git tag
-VERSION=0.3
+VERSION=0.4
 ROOT=`pwd`
 PLUGINNAME="plugin.video.sciflix"
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sciflix" name="SciFlix" version="0.2" provider-name="Jani (rasjani) Mikkonen">
+<addon id="plugin.video.sciflix" name="SciFlix" version="0.4" provider-name="Jani (rasjani) Mikkonen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmcswift2" version="1.1.1"/>
     <import addon="script.module.beautifulsoup" version="3.0.8"/>
     <import addon="plugin.video.youtube" version="3.1.0"/>
@@ -14,5 +14,8 @@
     <language></language>
     <summary>SciFlix dot blogspot dot com</summary>
     <description>Your Source For Best Free Scifi and Fantasy Flicks on Internet</description>
+    <platform>all</platform>
+    <language>en fi</language>
+    <website>http://sciflix.blogspot.com</website>
   </extension>
 </addon>

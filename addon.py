@@ -32,6 +32,11 @@ def videourl(pid):
 def thumbnailurl(pid):
   return THUMBNAIL_URL % pid
 
+@plugin.route('/playvid/<vid>')
+def playvid(vid):
+  url = videourl(vid)
+  plugin.set_resolved_url(url)
+
 @plugin.cached_route('/')
 def index():
   items = []
@@ -127,7 +132,7 @@ def category(name):
               {
                 'label': item['title'],
                 'label2': videojsondata['entry']['title']['$t'],
-                'path': videourl(playid),
+                'path': plugin.url_for('playvid', vid = playid ),
                 'thumbnail': thumbnailurl(playid),
                 'is_playable' : True,
                 'info': {
