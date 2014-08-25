@@ -17,5 +17,6 @@
     <platform>all</platform>
     <language>en fi</language>
     <website>http://sciflix.blogspot.com</website>
+    <source>https://github.com/rasjani/xbmc-sciflix.git</source>
   </extension>
 </addon>
