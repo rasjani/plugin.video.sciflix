@@ -10,6 +10,7 @@ mkdir -p ./releases/tmp/${PLUGINNAME}/resources/language/English
 mkdir -p ./releases/tmp/${PLUGINNAME}/resources/language/Finnish
 mkdir -p ./releases/tmp/${PLUGINNAME}/resources/lib
 
+cp ./icon.png ./releases/tmp/${PLUGINNAME}
 cp ./addon.py ./releases/tmp/${PLUGINNAME}
 cp ./addon.xml ./releases/tmp/${PLUGINNAME}
 cp ./changelog.txt ./releases/tmp/${PLUGINNAME}
@@ -22,13 +23,13 @@ cp ./resources/language/English/strings.xml ./releases/tmp/${PLUGINNAME}/resourc
 cp ./resources/language/Finnish/strings.xml ./releases/tmp/${PLUGINNAME}/resources/language/Finnish
 cp ./resources/lib/__init__.py ./releases/tmp/${PLUGINNAME}/resources/lib
 cd releases/tmp/
-zip -r ../${VERSION}/plugin.video.sciflix-${VERSION}.zip plugin.video.sciflix/*
 cp ${ROOT}/changelog.txt ../${VERSION}/changelog-${VERSION}.txt
 ## http://wiki.xbmc.org/index.php?title=Add-on_repositories is not very clear
 ## of image formats so in future, this might be changed .. 
 if [ -f ${ROOT}/fanart.png  ]; then
-  cp ${ROOT}/fanart.png ../${VERSION}/
+  echo cp ${ROOT}/fanart.png ../${VERSION}/
 fi
 if [ -f ${ROOT}/icon.png  ]; then
-  cp ${ROOT}/icon.png ../${VERSION}/
+  echo cp ${ROOT}/icon.png ../${VERSION}/
 fi
+zip -r ../${VERSION}/plugin.video.sciflix-${VERSION}.zip plugin.video.sciflix/*
