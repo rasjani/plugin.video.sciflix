@@ -42,7 +42,10 @@ def _convert_duration(val):
 
 
 def _jsonfy(url):
-  return json.loads(_download_page(url))
+  try:
+    return json.loads(_download_page(url))
+  except:
+    return None
 
 def videourl(pid):
   return YOUTUBE_PLUGIN_URL  % pid
@@ -58,7 +61,7 @@ def playvid(vid):
 @plugin.cached_route('/')
 def index():
   items = []
-  items.append( 
+  items.append(
     {
       'label': "All Videos",
       'path': plugin.url_for('category', name = 'all'),
@@ -80,28 +83,30 @@ def index():
     if not done:
       url = BLOGGER_POSTS_JSON_DATA_URL % token
       jsondata = _jsonfy(url)
-      for item in jsondata['items']:
-        for label in item['labels']:
-          if label not in categories:
-            categories.append(label)
-            if label.find("series:") != 0 and label not in ['sheepintheisland','fallout','half-life']:
-              items.append(
-                  {
-                    'label': label.title(),
-                    'path': plugin.url_for('category', name = label),
-                    'is_playable': False,
-                  }
-              )
+      if jsondata != None and 'items' in jsondata:
+        for item in jsondata['items']:
+          for label in item['labels']:
+            if label not in categories:
+              categories.append(label)
+              if label.find("series:") != 0 and label not in ['sheepintheisland','fallout','half-life']:
+                items.append(
+                    {
+                      'label': label.title(),
+                      'path': plugin.url_for('category', name = label),
+                      'is_playable': False,
+                    }
+                )
+      else:
+        done = True
   return items
 
-   
 @plugin.cached_route('/category/<name>/')
 def category(name):
   items = []
   done = False
   jsondata = None
   category = ''
- 
+
   if name != 'all':
     category = '&labels=%s' % name
 
@@ -119,50 +124,53 @@ def category(name):
       url = BLOGGER_POSTS_JSON_DATA_URL % token
       print url
       jsondata = _jsonfy(url)
-      if name == 'series':
-        sidlist = []
-        for item in jsondata['items']:
-          for label in item['labels']:
-            if label.find('series:')==0:
-              if label not in sidlist:
-                sidlist.append(label)
-                name = ' '.join(re.findall('[A-Z][^A-Z]*',label.partition(':')[2]))
-                items.append(
+      if jsondata != None and 'items' in jsondata:
+        if name == 'series':
+          sidlist = []
+          for item in jsondata['items']:
+            for label in item['labels']:
+              if label.find('series:')==0:
+                if label not in sidlist:
+                  sidlist.append(label)
+                  name = ' '.join(re.findall('[A-Z][^A-Z]*',label.partition(':')[2]))
+                  items.append(
+                    {
+                      'label': name,
+                      'path': plugin.url_for('category', name = label),
+                      'is_playable': False,
+                    }
+                  )
+
+        else:
+          for item in jsondata['items']:
+            foo = BS(item['content'])
+            playid = basename(urlparse(foo.find('param')['value']).path)
+            youtube_url = YOUTUBE_JSON_DATA_URL % playid
+            try:
+              print "youtube_url", youtube_url
+              videojsondata = _jsonfy( youtube_url )
+            except:
+              pass
+            else:
+              if videojsondata != None and 'entry' in videojsondata:
+                items.append (
                   {
-                    'label': name,
-                    'path': plugin.url_for('category', name = label),
-                    'is_playable': False,
+                    'label': item['title'],
+                    'label2': videojsondata['entry']['title']['$t'],
+                    'path': plugin.url_for('playvid', vid = playid ),
+                    'thumbnail': thumbnailurl(playid),
+                    'is_playable' : True,
+                    'info': {
+                        'plot': videojsondata['entry']['media$group']['media$description']['$t'],
+                        'plotoutline': videojsondata['entry']['title']['$t'],
+                        'duration': _convert_duration(videojsondata['entry']['media$group']['yt$duration']['seconds']),
+                        'rating': videojsondata['entry']['gd$rating']['average']
+                        # 'aired': item['date'].split()[0],
+                    },
                   }
                 )
-                
-
       else:
-        for item in jsondata['items']:
-          foo = BS(item['content'])
-          playid = basename(urlparse(foo.find('param')['value']).path)
-          youtube_url = YOUTUBE_JSON_DATA_URL % playid
-          try:
-            videojsondata = _jsonfy( youtube_url )
-          except HTTPError:
-            pass
-          else:
-            items.append (
-              {
-                'label': item['title'],
-                'label2': videojsondata['entry']['title']['$t'],
-                'path': plugin.url_for('playvid', vid = playid ),
-                'thumbnail': thumbnailurl(playid),
-                'is_playable' : True,
-                'info': {
-                    'plot': videojsondata['entry']['media$group']['media$description']['$t'],
-                    'plotoutline': videojsondata['entry']['title']['$t'],
-                    'duration': _convert_duration(videojsondata['entry']['media$group']['yt$duration']['seconds']),
-                    'rating': videojsondata['entry']['gd$rating']['average']
-                    # 'aired': item['date'].split()[0],
-                },
-              }
-            )
-
+        done = True
   return items
 
 if __name__ == '__main__':
