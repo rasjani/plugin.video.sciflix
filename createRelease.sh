@@ -19,6 +19,7 @@ cp ./changelog.txt ./releases/tmp/${PLUGINNAME}
 cp ./LICENSE.txt ./releases/tmp/${PLUGINNAME}
 cp ./README.md ./releases/tmp/${PLUGINNAME}
 cp ./resources/__init__.py ./releases/tmp/${PLUGINNAME}/resources/
+cp ./resources/settings.xml ./releases/tmp/${PLUGINNAME}/resources/
 cp ./resources/language/English/strings.xml ./releases/tmp/${PLUGINNAME}/resources/language/English
 cp ./resources/language/Finnish/strings.xml ./releases/tmp/${PLUGINNAME}/resources/language/Finnish
 cp ./resources/lib/__init__.py ./releases/tmp/${PLUGINNAME}/resources/lib

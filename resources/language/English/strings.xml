@@ -2,4 +2,13 @@
 <strings>
   <!-- Plugin name -->
   <string id="30000">sciflix</string>
+
+  <string id="30100">Proxy Settings</string>
+  <string id="30101">Use Proxy</string>
+  <string id="30102">Host</string>
+  <string id="30103">Port</string>
+
+
+  <string id="30200">Miscellaneous</string>
+  <string id="30201">Debug Mode</string>
 </strings>

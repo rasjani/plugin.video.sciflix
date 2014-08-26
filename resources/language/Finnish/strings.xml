@@ -2,4 +2,13 @@
 <strings>
   <!-- Plugin name -->
   <string id="30000">sciflix</string>
+
+  <string id="30100">Välimuisti</string>
+  <string id="30101">Välimuisti käytössä?</string>
+  <string id="30102">Osoite</string>
+  <string id="30103">Portti</string>
+
+
+  <string id="30200">Sekalaiset</string>
+  <string id="30201">Debug viestit</string>
 </strings>
