@@ -13,7 +13,7 @@ GOOGLE_API_KEY="AIzaSyBIUneOnieL9jxdA1MiKuvaMrcibJc8Og0"
 THUMBNAIL_QUALITY="standard"
 YOUTUBE_JSON_DATA_URL="https://www.googleapis.com/youtube/v3/videos?id=%s&key=%s&part=contentDetails,snippet"
 BLOGGER_POSTS_JSON_DATA_URL="https://www.googleapis.com/blogger/v3/blogs/8574416417432246234/posts?key=%s%s"
-YOUTUBE_PLUGIN_URL="plugin://plugin.video.youtube/?action=play_video&videoid=%s"
+YOUTUBE_PLUGIN_URL="plugin://plugin.video.youtube/play/?video_id=%s"
 
 plugin = Plugin()
 
