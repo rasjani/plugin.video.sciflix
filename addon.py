@@ -164,7 +164,7 @@ def category(name):
                         'plot': videojsondata['entry']['media$group']['media$description']['$t'],
                         'plotoutline': videojsondata['entry']['title']['$t'],
                         'duration': _convert_duration(videojsondata['entry']['media$group']['yt$duration']['seconds']),
-                        'rating': videojsondata['entry']['gd$rating']['average']
+                        # 'rating': videojsondata['entry']['gd$rating']['average']
                         # 'aired': item['date'].split()[0],
                     },
                   }
