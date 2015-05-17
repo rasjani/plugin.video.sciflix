@@ -11,7 +11,6 @@ import urllib2
 
 GOOGLE_API_KEY="AIzaSyBIUneOnieL9jxdA1MiKuvaMrcibJc8Og0"
 THUMBNAIL_QUALITY="standard"
-#YOUTUBE_JSON_DATA_URL="http://gdata.youtube.com/feeds/api/videos/%s?v=2&alt=json"
 YOUTUBE_JSON_DATA_URL="https://www.googleapis.com/youtube/v3/videos?id=%s&key=%s&part=contentDetails,snippet"
 BLOGGER_POSTS_JSON_DATA_URL="https://www.googleapis.com/blogger/v3/blogs/8574416417432246234/posts?key=%s%s"
 YOUTUBE_PLUGIN_URL="plugin://plugin.video.youtube/?action=play_video&videoid=%s"
@@ -37,10 +36,17 @@ def _download_page(url):
     return resp
 
 def _convert_duration(val):
-  m, s = divmod(int(val), 60)
-  h, m = divmod(m, 60)
-  ret = "%02d:%02d:%02d" % (h, m, s)
-  return ret
+  ret = 60
+  tmp = re.match("PT([0-9]+)H([0-9]+)M([0-9]+)S", val )
+  if tmp != None:
+    ret = (int(tmp.group(1)) * 60 * 60) +  (int(tmp.group(2))*60) + (int(tmp.group(3)))
+  else:
+    tmp = re.match("PT([0-9]+)M([0-9]+)S", val )
+    if tmp != None:
+      ret = (int(tmp.group(1))*60) + (int(tmp.group(2)))
+
+  ret = (ret - ret % 60) / 60
+  return ret;
 
 
 def _jsonfy(url):
@@ -170,8 +176,7 @@ def category(name):
                     'info': {
                         'plot': data['snippet']['description'],
                         'plotoutline': data['snippet']['title'],
-                        #'duration': _convert_duration(videojsondata['entry']['media$group']['yt$duration']['seconds']),
-                        # 'rating': videojsondata['entry']['gd$rating']['average']
+                        'duration': _convert_duration(data['contentDetails']['duration'])
                         #'aired': data['snippet']['publishedAt']
                     },
                   }
