@@ -9,9 +9,11 @@ import re
 import json
 import urllib2
 
-YOUTUBE_JSON_DATA_URL="http://gdata.youtube.com/feeds/api/videos/%s?v=2&alt=json"
-BLOGGER_POSTS_JSON_DATA_URL="https://www.googleapis.com/blogger/v3/blogs/8574416417432246234/posts?key=AIzaSyBIUneOnieL9jxdA1MiKuvaMrcibJc8Og0%s"
-THUMBNAIL_URL="http://img.youtube.com/vi/%s/hqdefault.jpg"
+GOOGLE_API_KEY="AIzaSyBIUneOnieL9jxdA1MiKuvaMrcibJc8Og0"
+THUMBNAIL_QUALITY="standard"
+#YOUTUBE_JSON_DATA_URL="http://gdata.youtube.com/feeds/api/videos/%s?v=2&alt=json"
+YOUTUBE_JSON_DATA_URL="https://www.googleapis.com/youtube/v3/videos?id=%s&key=%s&part=contentDetails,snippet"
+BLOGGER_POSTS_JSON_DATA_URL="https://www.googleapis.com/blogger/v3/blogs/8574416417432246234/posts?key=%s%s"
 YOUTUBE_PLUGIN_URL="plugin://plugin.video.youtube/?action=play_video&videoid=%s"
 
 plugin = Plugin()
@@ -50,8 +52,12 @@ def _jsonfy(url):
 def videourl(pid):
   return YOUTUBE_PLUGIN_URL  % pid
 
-def thumbnailurl(pid):
-  return THUMBNAIL_URL % pid
+def thumbnailurl(data):
+  if THUMBNAIL_QUALITY in data:
+    return data[THUMBNAIL_QUALITY]['url']
+  else:
+    return data['default']['url']
+
 
 @plugin.route('/playvid/<vid>')
 def playvid(vid):
@@ -81,7 +87,7 @@ def index():
         token = ""
 
     if not done:
-      url = BLOGGER_POSTS_JSON_DATA_URL % token
+      url = BLOGGER_POSTS_JSON_DATA_URL % (GOOGLE_API_KEY, token)
       jsondata = _jsonfy(url)
       if jsondata != None and 'items' in jsondata:
         for item in jsondata['items']:
@@ -121,8 +127,7 @@ def category(name):
         token = ""
 
     if not done:
-      url = BLOGGER_POSTS_JSON_DATA_URL % token
-      print url
+      url = BLOGGER_POSTS_JSON_DATA_URL % (GOOGLE_API_KEY, token)
       jsondata = _jsonfy(url)
       if jsondata != None and 'items' in jsondata:
         if name == 'series':
@@ -142,33 +147,37 @@ def category(name):
                   )
 
         else:
+
           for item in jsondata['items']:
             foo = BS(item['content'])
             playid = basename(urlparse(foo.find('param')['value']).path)
-            youtube_url = YOUTUBE_JSON_DATA_URL % playid
+            youtube_url = YOUTUBE_JSON_DATA_URL % (playid, GOOGLE_API_KEY)
             try:
-              print "youtube_url", youtube_url
               videojsondata = _jsonfy( youtube_url )
             except:
               pass
             else:
-              if videojsondata != None and 'entry' in videojsondata:
+              # if videojsondata['items'] != None and videojsondata['items'][0] != None:
+              if videojsondata['pageInfo']['totalResults'] != 0:
+                data = videojsondata['items'][0];
                 items.append (
                   {
                     'label': item['title'],
-                    'label2': videojsondata['entry']['title']['$t'],
+                    'label2': data['snippet']['title'],
                     'path': plugin.url_for('playvid', vid = playid ),
-                    'thumbnail': thumbnailurl(playid),
+                    'thumbnail': thumbnailurl(data['snippet']['thumbnails']),
                     'is_playable' : True,
                     'info': {
-                        'plot': videojsondata['entry']['media$group']['media$description']['$t'],
-                        'plotoutline': videojsondata['entry']['title']['$t'],
-                        'duration': _convert_duration(videojsondata['entry']['media$group']['yt$duration']['seconds']),
+                        'plot': data['snippet']['description'],
+                        'plotoutline': data['snippet']['title'],
+                        #'duration': _convert_duration(videojsondata['entry']['media$group']['yt$duration']['seconds']),
                         # 'rating': videojsondata['entry']['gd$rating']['average']
-                        # 'aired': item['date'].split()[0],
+                        #'aired': data['snippet']['publishedAt']
                     },
                   }
                 )
+              else:
+                print "Missing video: %s (%s)" % (item['title'], playid )
       else:
         done = True
   return items
